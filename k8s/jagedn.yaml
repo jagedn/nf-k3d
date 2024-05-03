@@ -1,0 +1,36 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jagedn
+  labels:
+    app: jagedn
+spec:
+  selector:
+    matchLabels:
+      app: jagedn
+  template:
+    metadata:
+      labels:
+        app: jagedn
+    spec:
+      serviceAccountName: nextflow-sa
+      terminationGracePeriodSeconds: 5
+      securityContext:
+        fsGroup: 0
+        runAsGroup: 0
+        runAsNonRoot: false
+        runAsUser: 0
+      containers:
+      - name: nextflow
+        image: jagedn/nextflow
+        env:
+        - name: NXF_ASSETS
+          value: /mnt/nextflow/assets
+        volumeMounts:
+        - mountPath: /mnt/nextflow/
+          name: volume
+      volumes:
+      - name: volume
+        persistentVolumeClaim:
+          claimName: nextflow      

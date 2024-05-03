@@ -1,0 +1,25 @@
+apiVersion: skaffold/v4beta10
+kind: Config
+metadata:
+  name: nextflow
+
+build:
+  artifacts:
+    - image: jagedn/nextflow
+      context: .
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: 'project/**'
+            dest: /project  
+
+manifests:
+   kustomize:
+     paths:
+       - k8s
+
+deploy:
+  kubectl:
+    defaultNamespace: nextflow
+

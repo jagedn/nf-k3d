@@ -1,0 +1,66 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jagedn-nginx
+  labels:
+    app: jagedn-nginx
+spec:
+  selector:
+    matchLabels:
+      app: jagedn-nginx
+  template:
+    metadata:
+      labels:
+        app: jagedn-nginx
+    spec:
+      containers:
+      - name: nginx-container
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+        volumeMounts:
+          - name: volume
+            mountPath: /usr/share/nginx/html/
+      volumes:
+      - name: volume
+        persistentVolumeClaim:
+          claimName: nextflow      
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jagedn-nginx
+  labels:
+    run: jagedn-nginx
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+  selector:
+    app: jagedn-nginx
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: jagedn-nginx
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: PathPrefix(`/jagedn/`)
+      kind: Rule
+      services:
+        - name: jagedn-nginx
+          port: 80
+      middlewares:
+        - name: jagedn-nginx
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: jagedn-nginx
+spec:
+  stripPrefix:
+    prefixes:
+      - /jagedn/
